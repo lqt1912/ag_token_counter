@@ -1,0 +1,154 @@
+{
+  "name": "antigravity-token-counter",
+  "displayName": "Antigravity Token Counter",
+  "description": "Real-time input and output token counter for Google Antigravity IDE with cost estimation and analytics.",
+  "version": "1.1.0",
+  "publisher": "antigravity-dev",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Productivity"
+  ],
+  "keywords": [
+    "antigravity",
+    "token",
+    "counter",
+    "gemini",
+    "llm",
+    "cost",
+    "ai"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "antigravityTokenCounter.showStats",
+        "title": "Antigravity Token Counter: Show Stats & Menu",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "antigravityTokenCounter.resetSession",
+        "title": "Antigravity Token Counter: Reset Current Session",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "antigravityTokenCounter.exportReport",
+        "title": "Antigravity Token Counter: Export Token Usage Report",
+        "icon": "$(export)"
+      },
+      {
+        "command": "antigravityTokenCounter.refreshWatcher",
+        "title": "Antigravity Token Counter: Rescan Active Conversation",
+        "icon": "$(sync)"
+      }
+    ],
+    "configuration": {
+      "title": "Antigravity Token Counter",
+      "properties": {
+        "antigravityTokenCounter.brainPath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom absolute path to Antigravity brain directory (Leave empty for default ~/.gemini/antigravity-ide/brain)."
+        },
+        "antigravityTokenCounter.modelPricing": {
+          "type": "string",
+          "default": "auto",
+          "enum": [
+            "auto",
+            "gemini-3.7-flash",
+            "gemini-3.6-flash",
+            "gemini-3.5-flash",
+            "gemini-3.1-pro",
+            "claude-sonnet-4-6",
+            "claude-opus-4-6",
+            "gpt-oss-120b",
+            "gemini-2.0-flash",
+            "gemini-2.0-flash-lite",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "claude-3-5-haiku",
+            "claude-3-7-sonnet",
+            "gpt-4o",
+            "gpt-4o-mini",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "⚡ Auto-Detect Model (Automatically detect from conversation logs)",
+            "🔥 Gemini 3.7 Flash — Fast & Medium ($0.75/1M In, $3.75/1M Out)",
+            "🔥 Gemini 3.6 Flash — Fast & Medium ($0.75/1M In, $3.75/1M Out) [Intro price until Dec 2026]",
+            "⚡ Gemini 3.5 Flash — Fast & Medium ($1.50/1M In, $9.00/1M Out)",
+            "💎 Gemini 3.1 Pro — High reasoning, Low speed ($2.00/1M In, $12.00/1M Out)",
+            "🤖 Claude Sonnet 4.6 (Thinking) — Current Anthropic workhorse ($3.00/1M In, $15.00/1M Out)",
+            "🧠 Claude Opus 4.6 (Thinking) — Highest capability ($5.00/1M In, $25.00/1M Out)",
+            "🦾 GPT-OSS 120B — Open-source inference (~$0.90/1M In, ~$0.90/1M Out)",
+            "[Legacy] Gemini 2.0 Flash ($0.10/1M In, $0.40/1M Out)",
+            "[Legacy] Gemini 2.0 Flash Lite ($0.075/1M In, $0.30/1M Out)",
+            "[Legacy] Gemini 1.5 Flash ($0.075/1M In, $0.30/1M Out)",
+            "[Legacy] Gemini 1.5 Pro ($1.25/1M In, $5.00/1M Out)",
+            "[Legacy] Claude 3.5 Haiku ($0.80/1M In, $4.00/1M Out)",
+            "[Legacy] Claude 3.7 Sonnet ($3.00/1M In, $15.00/1M Out)",
+            "[Legacy] GPT-4o ($2.50/1M In, $10.00/1M Out)",
+            "[Legacy] GPT-4o Mini ($0.15/1M In, $0.60/1M Out)",
+            "Custom Pricing — defined by fields below"
+          ],
+          "description": "Model pricing profile to estimate token usage cost. Current Antigravity models are listed first."
+        },
+        "antigravityTokenCounter.customInputCostPerMillion": {
+          "type": "number",
+          "default": 0.75,
+          "description": "Custom Input token cost in USD per 1M tokens."
+        },
+        "antigravityTokenCounter.customOutputCostPerMillion": {
+          "type": "number",
+          "default": 3.75,
+          "description": "Custom Output token cost in USD per 1M tokens."
+        },
+        "antigravityTokenCounter.statusBarFormat": {
+          "type": "string",
+          "default": "compact",
+          "enum": [
+            "compact",
+            "detailed",
+            "total-only",
+            "with-cost"
+          ],
+          "enumDescriptions": [
+            "In: 12.4k | Out: 3.2k",
+            "📥 12,410 | 📤 3,250 (Total: 15.6k)",
+            "Tokens: 15.6k",
+            "15.6k tokens (~$0.02)"
+          ],
+          "description": "Display format for the status bar item."
+        },
+        "antigravityTokenCounter.pollingIntervalMs": {
+          "type": "number",
+          "default": 1000,
+          "description": "Polling interval in milliseconds to check for active conversation changes."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "node esbuild.js --production",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "build": "node esbuild.js",
+    "test": "node -e \"require('esbuild').buildSync({entryPoints:['test/testTokenizer.ts'], outfile:'out/testTokenizer.js', bundle:true, platform:'node', external:['vscode']})\" && node out/testTokenizer.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.24.0",
+    "esbuild": "^0.20.1",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "js-tiktoken": "^1.0.18"
+  }
+}

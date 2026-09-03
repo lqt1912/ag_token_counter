@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Token Analytics</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    
+    <!-- Header -->
+    <div class="header">
+      <div class="title-area">
+        <div class="title">AI Token Analytics Dashboard</div>
+        <div class="live-badge">
+          <span class="live-dot"></span> LIVE SYNC
+        </div>
+      </div>
+      <div class="time-filters">
+        <button class="filter-btn active" data-filter="24h">24 Hours</button>
+        <button class="filter-btn" data-filter="7d">7 Days</button>
+        <button class="filter-btn" data-filter="all">All Time</button>
+      </div>
+    </div>
+
+    <!-- 5 Top Cards Grid -->
+    <div class="top-grid">
+      <div class="metric-card">
+        <div class="card-header">
+          <span class="card-title">Total Requests</span>
+          <span style="color: #10b981;">~</span>
+        </div>
+        <div class="card-value" id="val-total-requests">0</div>
+        <div class="card-subtext" id="sub-conversations">0 conversations</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="card-header">
+          <span class="card-title">Total Tokens</span>
+          <span style="color: #f59e0b;">⚡</span>
+        </div>
+        <div class="card-value val-tokens" id="val-total-tokens">0</div>
+        <div class="card-subtext">Real-time calculated</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="card-header">
+          <span class="card-title">Estimated Cost</span>
+          <span style="color: #f43f5e;">⚠</span>
+        </div>
+        <div class="card-value val-error" id="val-total-cost">$0.0000</div>
+        <div class="card-subtext">Aggregated cost USD</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="card-header">
+          <span class="card-title">Models Used</span>
+          <span style="color: #0f172a;">🔑</span>
+        </div>
+        <div class="card-value" id="val-models-used">0</div>
+        <div class="card-subtext" style="color: #10b981; font-weight: 600;">Active Models</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="card-header">
+          <span class="card-title">Avg Tokens / Call</span>
+          <span>👥</span>
+        </div>
+        <div class="card-value val-pool" id="val-avg-tokens">0</div>
+        <div class="card-subtext" style="color: #10b981; font-weight: 600;">Per Interaction</div>
+      </div>
+    </div>
+
+    <!-- Compact Active Conversation Context Monitor -->
+    <div class="active-session-card">
+      <div class="active-session-header">
+        <div class="active-session-title-group">
+          <div class="active-pulse-badge">
+            <span class="pulse-dot"></span>
+            <span id="active-status-text">ACTIVE CONTEXT</span>
+          </div>
+          <div class="active-session-title" id="active-session-title">Scanning active session...</div>
+          <div class="active-session-id" id="active-session-id">ID: --</div>
+        </div>
+        <div class="active-header-right">
+          <div class="active-model-badge" id="active-model-badge">
+            <span class="active-model-icon">🤖</span>
+            <span id="active-model-name">Detecting...</span>
+          </div>
+          <span class="active-last-time" id="active-last-updated">Just now</span>
+        </div>
+      </div>
+
+      <!-- Compact Progress Bar & Quick Stats Inline -->
+      <div class="context-gauge-row">
+        <div class="gauge-bar-col">
+          <div class="context-gauge-labels">
+            <span class="gauge-label-left">Size: <strong id="active-context-tokens">0</strong> <span style="font-size: 0.72rem; color: #64748b;">tokens</span></span>
+            <span class="gauge-label-right" id="active-context-percent">0% of 1M</span>
+          </div>
+          <div class="context-progress-bg">
+            <div class="context-progress-fill" id="active-progress-fill" style="width: 0%;"></div>
+          </div>
+          <div class="context-gauge-footer">
+            <span id="active-context-remaining">Runway: -- tokens</span>
+            <span id="active-context-status" class="status-optimal">● Optimal</span>
+          </div>
+        </div>
+
+        <div class="active-metrics-row">
+          <div class="mini-stat">
+            <span class="stat-lbl">📥 Input</span>
+            <span class="stat-val" id="active-input-tokens">0</span>
+          </div>
+          <div class="mini-stat">
+            <span class="stat-lbl">📤 Output</span>
+            <span class="stat-val" id="active-output-tokens">0</span>
+          </div>
+          <div class="mini-stat">
+            <span class="stat-lbl">🔄 Steps</span>
+            <span class="stat-val" id="active-step-count">0</span>
+          </div>
+          <div class="mini-stat">
+            <span class="stat-lbl">💰 Cost</span>
+            <span class="stat-val" id="active-session-cost">$0.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Section: Detailed Table (Left) & Model Split Donut (Right) -->
+    <div class="main-layout">
+      <!-- Detailed Model Table -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Detailed Model Breakdown</div>
+          <div class="table-subtitle">Comprehensive token and cost statistics per AI model for selected period.</div>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Model Name</th>
+              <th>Input Tokens</th>
+              <th>Output Tokens</th>
+              <th>Total Tokens</th>
+              <th>Calls / Steps</th>
+              <th>Estimated Cost</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr>
+              <td colspan="6" style="text-align: center; color: #94a3b8; padding: 24px 0;">Loading data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Model Usage Split Donut Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">
+              <span style="color: #f59e0b;">❖</span> Model Usage Split
+            </div>
+            <div class="chart-subtitle">Breakdown across AI models for selected period.</div>
+          </div>
+        </div>
+        
+        <div class="donut-wrapper">
+          <div class="donut-circle" id="donut-circle">
+            <div class="donut-hole">
+              <div class="donut-center-value" id="donut-total-steps">0</div>
+              <div class="donut-center-label">STEPS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="custom-legend" id="custom-legend-container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
