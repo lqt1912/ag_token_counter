@@ -1,10 +1,31 @@
 const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { fetchAllStats } = require('./service');
 
-// Aggressive Memory & V8 Optimization Flags for Background System Tray Mode
-app.commandLine.appendSwitch('js-flags', '--expose-gc --max-old-space-size=128');
+// Global exception safety to prevent silent exits/crashes
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception in Main Process:', err);
+  try {
+    const logPath = path.join(app.getPath('userData'), 'crash.log');
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] Uncaught Exception: ${err.stack || err}\n`);
+  } catch {}
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection in Main Process:', reason);
+  try {
+    const logPath = path.join(app.getPath('userData'), 'crash.log');
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] Unhandled Rejection: ${reason && (reason.stack || reason)}\n`);
+  } catch {}
+});
+
+// Optimization Flags: Expose GC for memory cleanup, without the restrictive 128MB heap choke that caused crashes
+app.commandLine.appendSwitch('js-flags', '--expose-gc');
 app.commandLine.appendSwitch('disable-gpu-memory-buffer-video-frames');
+
+// Keep-alive heartbeat interval to ensure the libuv event loop never drains
+const keepAliveTimer = setInterval(() => {}, 1000 * 60 * 60);
 
 let mainWindow = null;
 let tray = null;
@@ -12,9 +33,14 @@ let isQuitting = false;
 
 const htmlPath = path.join(__dirname, '../renderer/index.html');
 
-// IPC Handler: Respond to renderer requests for token stats
+// IPC Handler: Respond to renderer requests for token stats safely
 ipcMain.handle('get-stats', async () => {
-  return await fetchAllStats();
+  try {
+    return await fetchAllStats();
+  } catch (err) {
+    console.error('IPC get-stats error:', err);
+    return { error: err.message || 'Failed to fetch stats' };
+  }
 });
 
 function showDashboard() {
@@ -22,17 +48,18 @@ function showDashboard() {
     createWindow();
     return;
   }
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore();
+  }
   mainWindow.show();
-  if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();
 }
 
 function hideDashboard() {
   if (!mainWindow || mainWindow.isDestroyed()) return;
-  // Destroying the window terminates the Chromium Renderer process (~116MB saved immediately)
-  // and releases GPU & Network buffers. Only the tiny ~30MB Node.js main process remains in background.
-  mainWindow.destroy();
-  mainWindow = null;
+  // Safely hide the window to tray instead of destroying it.
+  // This avoids IPC race conditions, native minimize-animation crashes, and process termination.
+  mainWindow.hide();
   if (global.gc) {
     try { global.gc(); } catch {}
   }
@@ -112,6 +139,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
+      backgroundThrottling: true,
     },
   });
 
@@ -158,6 +186,7 @@ if (!gotTheLock) {
 
   app.on('before-quit', () => {
     isQuitting = true;
+    clearInterval(keepAliveTimer);
   });
 
   app.on('window-all-closed', () => {

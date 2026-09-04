@@ -39,17 +39,20 @@ async function loadData() {
     console.error('Error in renderer loadData:', err);
   } finally {
     isLoading = false;
-    // SMART POLLING: Save 90% CPU & RAM when window is minimized or hidden to System Tray
-    const delay = document.hidden ? 15000 : 2500;
-    pollingTimer = setTimeout(loadData, delay);
+    // When window is minimized or hidden in tray, pause polling completely (0% CPU, 0 disk I/O, 0 memory churn)
+    if (!document.hidden) {
+      pollingTimer = setTimeout(loadData, 2500);
+    }
   }
 }
 
-// React to visibility changes to instantly resume fast polling when window is opened
+// React to visibility changes to instantly resume polling when window is restored
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && !isLoading) {
-    clearTimeout(pollingTimer);
+  if (!document.hidden) {
+    if (pollingTimer) clearTimeout(pollingTimer);
     loadData();
+  } else {
+    if (pollingTimer) clearTimeout(pollingTimer);
   }
 });
 
