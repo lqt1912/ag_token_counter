@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Token Mini Bar</title>
+  <link rel="stylesheet" href="mini.css">
+</head>
+<body>
+  <div class="mini-bar" id="mini-bar" title="Drag to move. Click to open Dashboard.">
+    <!-- Compact Drag Grip -->
+    <div class="drag-grip" title="Hold to drag">
+      <span class="grip-dot"></span>
+      <span class="grip-dot"></span>
+    </div>
+
+    <!-- 4 Compact Metric Cards: Inp, Out, Steps, Cost -->
+    <div class="metric-item" id="btn-input" title="Input Tokens">
+      <span class="metric-icon">📥</span>
+      <span class="metric-label">Inp</span>
+      <span class="metric-value" id="val-input">0</span>
+    </div>
+
+    <div class="metric-item" id="btn-output" title="Output Tokens">
+      <span class="metric-icon">📤</span>
+      <span class="metric-label">Out</span>
+      <span class="metric-value" id="val-output">0</span>
+    </div>
+
+    <div class="metric-item" id="btn-steps" title="Steps">
+      <span class="metric-icon">🔄</span>
+      <span class="metric-label">Steps</span>
+      <span class="metric-value" id="val-steps">0</span>
+    </div>
+
+    <div class="metric-item highlight" id="btn-cost" title="Cost USD">
+      <span class="metric-icon">💰</span>
+      <span class="metric-label">Cost</span>
+      <span class="metric-value cost-value" id="val-cost">$0.0000</span>
+    </div>
+
+    <!-- Small Open Dashboard Button -->
+    <button class="action-btn" id="btn-open-dashboard" title="Open Full Dashboard">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" y1="14" x2="21" y2="3"></line>
+      </svg>
+    </button>
+  </div>
+
+  <script src="mini.js"></script>
+</body>
+</html>

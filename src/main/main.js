@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain } = require('electron');
+const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { fetchAllStats } = require('./service');
@@ -28,10 +28,13 @@ app.commandLine.appendSwitch('disable-gpu-memory-buffer-video-frames');
 const keepAliveTimer = setInterval(() => {}, 1000 * 60 * 60);
 
 let mainWindow = null;
+let miniWindow = null;
+let isMiniVisible = true;
 let tray = null;
 let isQuitting = false;
 
 const htmlPath = path.join(__dirname, '../renderer/index.html');
+const miniHtmlPath = path.join(__dirname, '../renderer/mini.html');
 
 // IPC Handler: Respond to renderer requests for token stats safely
 ipcMain.handle('get-stats', async () => {
@@ -41,6 +44,40 @@ ipcMain.handle('get-stats', async () => {
     console.error('IPC get-stats error:', err);
     return { error: err.message || 'Failed to fetch stats' };
   }
+});
+
+// IPC Handler: Open/show full dashboard from mini widget or tray
+ipcMain.handle('open-dashboard', () => {
+  showDashboard();
+});
+
+// IPC Handler: Toggle mini widget visibility
+ipcMain.handle('toggle-mini-widget', (event, visible) => {
+  toggleMiniWidget(visible);
+});
+
+// IPC Handler: Dynamically resize and re-center mini widget when text expands or shrinks
+ipcMain.handle('resize-mini-widget', (event, contentWidth) => {
+  if (!miniWindow || miniWindow.isDestroyed()) return;
+
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { workArea } = primaryDisplay;
+
+  // Add 28px safe buffer for shadow and rounded caps (14px each side)
+  const safeWidth = Math.max(320, Math.ceil(contentWidth + 28));
+  const currentBounds = miniWindow.getBounds();
+
+  if (Math.abs(currentBounds.width - safeWidth) < 2) return;
+
+  // Keep it centered at top
+  const newX = Math.round(workArea.x + (workArea.width - safeWidth) / 2);
+
+  miniWindow.setBounds({
+    x: newX,
+    y: currentBounds.y,
+    width: safeWidth,
+    height: currentBounds.height,
+  });
 });
 
 function showDashboard() {
@@ -65,6 +102,77 @@ function hideDashboard() {
   }
 }
 
+function toggleMiniWidget(visible) {
+  if (visible === undefined) {
+    isMiniVisible = !isMiniVisible;
+  } else {
+    isMiniVisible = !!visible;
+  }
+
+  if (isMiniVisible) {
+    if (!miniWindow || miniWindow.isDestroyed()) {
+      createMiniWindow();
+    } else {
+      miniWindow.showInactive();
+    }
+  } else {
+    if (miniWindow && !miniWindow.isDestroyed()) {
+      miniWindow.hide();
+    }
+  }
+  updateTrayMenu();
+}
+
+function updateTrayMenu() {
+  if (!tray || tray.isDestroyed()) return;
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Open Dashboard',
+      click: () => {
+        showDashboard();
+      },
+    },
+    {
+      label: 'Mini Taskbar Widget',
+      type: 'checkbox',
+      checked: isMiniVisible,
+      click: (menuItem) => {
+        toggleMiniWidget(menuItem.checked);
+      },
+    },
+    {
+      label: 'Reload UI',
+      click: () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.loadFile(htmlPath);
+        } else {
+          showDashboard();
+        }
+        if (miniWindow && !miniWindow.isDestroyed()) {
+          miniWindow.loadFile(miniHtmlPath);
+        }
+      },
+    },
+    { type: 'separator' },
+    {
+      label: 'Exit AI Token Analytics',
+      click: () => {
+        isQuitting = true;
+        if (miniWindow && !miniWindow.isDestroyed()) {
+          miniWindow.destroy();
+        }
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.destroy();
+        }
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+}
+
 function createTray() {
   const iconPath = path.join(__dirname, '../../assets/icon.png');
   let icon = nativeImage.createFromPath(iconPath);
@@ -81,37 +189,7 @@ function createTray() {
   tray = new Tray(icon.resize({ width: 18, height: 18 }));
   tray.setToolTip('AI Token Analytics');
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Open Dashboard',
-      click: () => {
-        showDashboard();
-      },
-    },
-    {
-      label: 'Reload UI',
-      click: () => {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.loadFile(htmlPath);
-        } else {
-          showDashboard();
-        }
-      },
-    },
-    { type: 'separator' },
-    {
-      label: 'Exit AI Token Analytics',
-      click: () => {
-        isQuitting = true;
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.destroy();
-        }
-        app.quit();
-      },
-    },
-  ]);
-
-  tray.setContextMenu(contextMenu);
+  updateTrayMenu();
 
   tray.on('click', () => {
     if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible()) {
@@ -119,6 +197,57 @@ function createTray() {
     } else {
       showDashboard();
     }
+  });
+}
+
+function createMiniWindow() {
+  if (miniWindow && !miniWindow.isDestroyed()) {
+    miniWindow.showInactive();
+    return;
+  }
+
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { workArea } = primaryDisplay;
+
+  const widgetWidth = 400;
+  const widgetHeight = 46;
+
+  // Position at top-center of the screen
+  const x = Math.round(workArea.x + (workArea.width - widgetWidth) / 2);
+  const y = Math.round(workArea.y + 4);
+
+  miniWindow = new BrowserWindow({
+    width: widgetWidth,
+    height: widgetHeight,
+    x,
+    y,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    show: false,
+    hasShadow: false,
+    backgroundColor: '#00000000',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      backgroundThrottling: false,
+    },
+  });
+
+  miniWindow.setAlwaysOnTop(true, 'screen-saver');
+  miniWindow.loadFile(miniHtmlPath);
+
+  miniWindow.once('ready-to-show', () => {
+    if (isMiniVisible && miniWindow && !miniWindow.isDestroyed()) {
+      miniWindow.showInactive(); // Show without stealing keyboard/mouse focus
+    }
+  });
+
+  miniWindow.on('closed', () => {
+    miniWindow = null;
   });
 }
 
@@ -182,11 +311,15 @@ if (!gotTheLock) {
   app.on('ready', () => {
     createTray();
     createWindow();
+    createMiniWindow();
   });
 
   app.on('before-quit', () => {
     isQuitting = true;
     clearInterval(keepAliveTimer);
+    if (miniWindow && !miniWindow.isDestroyed()) {
+      miniWindow.destroy();
+    }
   });
 
   app.on('window-all-closed', () => {
