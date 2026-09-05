@@ -8,7 +8,10 @@
   "scripts": {
     "start": "npx esbuild src/main/service.ts --bundle --platform=node --outfile=src/main/service.js --external:electron && electron .",
     "build": "npx esbuild src/main/service.ts --bundle --platform=node --outfile=src/main/service.js --external:electron",
-    "build:portable": "npm run build && electron-builder --win portable"
+    "build:portable": "npm run build && electron-builder --win portable",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "build": {
     "appId": "com.antigravity.tokencounter",
@@ -37,6 +40,7 @@
     "js-tiktoken": "^1.0.21"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
     "@types/node": "^20.17.24",
     "electron": "^44.1.1",
     "electron-builder": "^26.15.3",

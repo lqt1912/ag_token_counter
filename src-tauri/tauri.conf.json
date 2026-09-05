@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AI Token Analytics",
+  "version": "1.0.0",
+  "identifier": "com.antigravity.tokencounter",
+  "build": {
+    "frontendDist": "../src/renderer"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "AI Token Analytics",
+        "url": "index.html",
+        "width": 1300,
+        "height": 880,
+        "minWidth": 960,
+        "minHeight": 650,
+        "resizable": true,
+        "visible": false
+      },
+      {
+        "label": "mini",
+        "title": "AI Token Mini Bar",
+        "url": "mini.html",
+        "width": 400,
+        "height": 46,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "resizable": false,
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "../assets/icon.png"
+    ]
+  }
+}

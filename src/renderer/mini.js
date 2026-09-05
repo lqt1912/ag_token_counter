@@ -7,6 +7,32 @@ const elCost = document.getElementById('val-cost');
 const miniBar = document.getElementById('mini-bar');
 const btnDashboard = document.getElementById('btn-open-dashboard');
 
+const api = {
+  getStats: async () => {
+    if (window.electronAPI && window.electronAPI.getStats) {
+      return await window.electronAPI.getStats();
+    }
+    if (window.__TAURI__ && window.__TAURI__.core) {
+      return await window.__TAURI__.core.invoke('get_stats');
+    }
+    return null;
+  },
+  openDashboard: () => {
+    if (window.electronAPI && window.electronAPI.openDashboard) {
+      window.electronAPI.openDashboard();
+    } else if (window.__TAURI__ && window.__TAURI__.core) {
+      window.__TAURI__.core.invoke('open_dashboard');
+    }
+  },
+  resizeMiniWidget: (width) => {
+    if (window.electronAPI && window.electronAPI.resizeMiniWidget) {
+      window.electronAPI.resizeMiniWidget(width);
+    } else if (window.__TAURI__ && window.__TAURI__.core) {
+      window.__TAURI__.core.invoke('resize_mini_widget', { width });
+    }
+  },
+};
+
 let isFetching = false;
 let pollingTimer = null;
 
@@ -15,9 +41,7 @@ async function updateMiniStats() {
   isFetching = true;
 
   try {
-    if (!window.electronAPI || !window.electronAPI.getStats) return;
-
-    const res = await window.electronAPI.getStats();
+    const res = await api.getStats();
     if (!res || res.error) return;
 
     const session = res.currentSession || (res.sessions && res.sessions[0]) || null;
@@ -44,9 +68,9 @@ async function updateMiniStats() {
     isFetching = false;
     // Auto-resize check after DOM update
     requestAnimationFrame(() => {
-      if (miniBar && window.electronAPI && window.electronAPI.resizeMiniWidget) {
+      if (miniBar) {
         const width = miniBar.offsetWidth;
-        if (width > 0) window.electronAPI.resizeMiniWidget(width);
+        if (width > 0) api.resizeMiniWidget(width);
       }
     });
     pollingTimer = setTimeout(updateMiniStats, 2500);
@@ -54,9 +78,7 @@ async function updateMiniStats() {
 }
 
 function openDashboard() {
-  if (window.electronAPI && window.electronAPI.openDashboard) {
-    window.electronAPI.openDashboard();
-  }
+  api.openDashboard();
 }
 
 // Click on action button or any metric card opens full dashboard

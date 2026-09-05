@@ -16,11 +16,13 @@ async function loadData() {
   if (isLoading) return;
   isLoading = true;
   try {
-    if (!window.electronAPI) {
-      console.warn('window.electronAPI not found');
-      return;
+    let res = null;
+    if (window.electronAPI && window.electronAPI.getStats) {
+      res = await window.electronAPI.getStats();
+    } else if (window.__TAURI__ && window.__TAURI__.core) {
+      res = await window.__TAURI__.core.invoke('get_stats');
     }
-    const res = await window.electronAPI.getStats();
+    if (!res) return;
     if (res && res.error) {
       console.error('Backend Error:', res.error);
       const tableBody = document.getElementById('table-body');
