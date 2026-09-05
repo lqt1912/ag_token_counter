@@ -20,26 +20,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 12px;
+  padding: 4px 8px;
 }
 
-/* Perfect Pill Shape (Viên thuốc) */
+/* White Pill Shape (Viên thuốc trắng siêu gọn) */
 .mini-bar {
   display: inline-flex;
   align-items: center;
-  height: 30px;
-  padding: 0 10px 0 8px;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(10px) saturate(180%);
-  -webkit-backdrop-filter: blur(10px) saturate(180%);
-  border: 1.2px solid rgba(0, 0, 0, 0.45);
+  height: 24px;
+  padding: 0 8px 0 6px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 9999px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  gap: 3.5px;
   -webkit-app-region: drag;
   cursor: grab;
-  opacity: 0.82;
-  transition: opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  opacity: 1;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .mini-bar:active {
@@ -47,9 +45,8 @@ body {
 }
 
 .mini-bar:hover {
-  opacity: 1;
-  border-color: rgba(0, 0, 0, 0.85);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.18);
 }
 
 /* Drag Grip */
@@ -59,27 +56,27 @@ body {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 0 3px 0 1px;
-  opacity: 0.45;
+  padding: 0 2px 0 1px;
+  opacity: 0.35;
   cursor: grab;
 }
 
 .grip-dot {
-  width: 2.5px;
-  height: 2.5px;
+  width: 2px;
+  height: 2px;
   background-color: #000000;
   border-radius: 50%;
 }
 
-/* Metric Items: Light theme with black text */
+/* Metric Items: Compact pill items with crisp contrast */
 .metric-item {
   display: inline-flex;
   align-items: center;
-  gap: 3.5px;
+  gap: 3px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  padding: 1.5px 6px;
-  border-radius: 8px;
+  padding: 1px 5px;
+  border-radius: 6px;
   -webkit-app-region: no-drag;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -103,21 +100,21 @@ body {
 }
 
 .metric-icon {
-  font-size: 10.5px;
+  font-size: 10px;
   line-height: 1;
 }
 
 .metric-label {
-  font-size: 9.5px;
-  color: #475569;
+  font-size: 9px;
+  color: #64748b;
   font-weight: 600;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
 }
 
 .metric-value {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  color: #000000;
+  color: #0f172a;
   letter-spacing: -0.2px;
   font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
@@ -132,16 +129,22 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
-  color: #334155;
+  color: #475569;
   -webkit-app-region: no-drag;
+  pointer-events: auto;
   cursor: pointer;
   transition: all 0.15s ease;
-  margin-left: 2px;
+  margin-left: 1px;
+}
+
+.action-btn svg,
+.action-btn svg * {
+  pointer-events: none;
 }
 
 .action-btn:hover {

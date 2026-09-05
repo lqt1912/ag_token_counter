@@ -48,3 +48,12 @@ next-env.d.ts
 /legacy/out/
 *.vsix
 
+# Rust & Tauri
+/src-tauri/target/
+target/
+
+# Local Data Store
+/data/
+data-store.json
+
+

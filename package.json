@@ -8,7 +8,7 @@
   "scripts": {
     "start": "npx esbuild src/main/service.ts --bundle --platform=node --outfile=src/main/service.js --external:electron && electron .",
     "build": "npx esbuild src/main/service.ts --bundle --platform=node --outfile=src/main/service.js --external:electron",
-    "build:portable": "npm run build && electron-builder --win portable",
+    "build:portable": "tauri build --no-bundle && powershell -Command \"New-Item -ItemType Directory -Force dist-portable | Out-Null; Copy-Item src-tauri/target/release/ag-token-counter.exe dist-portable/AI-Token-Analytics.exe -Force\"",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"

@@ -12,23 +12,36 @@ const api = {
     if (window.electronAPI && window.electronAPI.getStats) {
       return await window.electronAPI.getStats();
     }
-    if (window.__TAURI__ && window.__TAURI__.core) {
-      return await window.__TAURI__.core.invoke('get_stats');
+    if (window.__TAURI__) {
+      const invoke = window.__TAURI__.core?.invoke || window.__TAURI__.invoke;
+      if (invoke) {
+        return await invoke('get_stats');
+      }
     }
     return null;
   },
-  openDashboard: () => {
+  openDashboard: async () => {
     if (window.electronAPI && window.electronAPI.openDashboard) {
       window.electronAPI.openDashboard();
-    } else if (window.__TAURI__ && window.__TAURI__.core) {
-      window.__TAURI__.core.invoke('open_dashboard');
+    } else if (window.__TAURI__) {
+      const invoke = window.__TAURI__.core?.invoke || window.__TAURI__.invoke;
+      if (invoke) {
+        try {
+          await invoke('open_dashboard');
+        } catch (err) {
+          console.error('Failed to open dashboard:', err);
+        }
+      }
     }
   },
   resizeMiniWidget: (width) => {
     if (window.electronAPI && window.electronAPI.resizeMiniWidget) {
       window.electronAPI.resizeMiniWidget(width);
-    } else if (window.__TAURI__ && window.__TAURI__.core) {
-      window.__TAURI__.core.invoke('resize_mini_widget', { width });
+    } else if (window.__TAURI__) {
+      const invoke = window.__TAURI__.core?.invoke || window.__TAURI__.invoke;
+      if (invoke) {
+        invoke('resize_mini_widget', { width });
+      }
     }
   },
 };
@@ -84,6 +97,7 @@ function openDashboard() {
 // Click on action button or any metric card opens full dashboard
 if (btnDashboard) {
   btnDashboard.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
     openDashboard();
   });
@@ -91,6 +105,7 @@ if (btnDashboard) {
 
 document.querySelectorAll('.metric-item').forEach((card) => {
   card.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
     openDashboard();
   });

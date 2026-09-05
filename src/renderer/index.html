@@ -17,10 +17,13 @@
           <span class="live-dot"></span> LIVE SYNC
         </div>
       </div>
-      <div class="time-filters">
-        <button class="filter-btn active" data-filter="24h">24 Hours</button>
-        <button class="filter-btn" data-filter="7d">7 Days</button>
-        <button class="filter-btn" data-filter="all">All Time</button>
+      <div class="header-actions">
+        <div class="time-filters">
+          <button class="filter-btn active" data-filter="24h">24 Hours</button>
+          <button class="filter-btn" data-filter="7d">7 Days</button>
+          <button class="filter-btn" data-filter="all">All Time</button>
+        </div>
+        <button class="settings-icon-btn" id="btn-open-settings" title="Settings">⚙</button>
       </div>
     </div>
 
@@ -180,6 +183,59 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- Settings Modal Dialog -->
+  <div class="modal-backdrop" id="settings-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span style="color: #f59e0b;">⚙</span> App Settings
+        </div>
+        <button class="modal-close-btn" id="btn-close-settings" title="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Setting Item: Auto Start -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">Start with Windows</div>
+            <div class="setting-desc">Automatically launch AI Token Analytics on Windows startup into the background / system tray.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-autostart">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Setting Item: Data Storage Location -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">Persistent Cache Storage</div>
+            <div class="setting-desc">Historical statistics and session snapshots saved locally for instantaneous loading.</div>
+            <div class="setting-path-badge" id="btn-open-data-folder" title="Click or Ctrl+Click to open folder in File Explorer">
+              <code>data/data-store.json</code>
+              <span class="path-note">(Next to executable)</span>
+              <span class="open-folder-icon">📂 Open Folder</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Setting Item: Version Info -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <div class="setting-name">AI Token Analytics</div>
+            <div class="setting-desc">Tauri v2 Native Rust Edition • Real-time AI Token & Context Monitor</div>
+          </div>
+          <div class="setting-version-badge">v1.0.0</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-status-text" id="settings-status-msg"></div>
+        <button class="modal-btn-done" id="btn-done-settings">Done</button>
+      </div>
+    </div>
   </div>
 
   <script src="renderer.js"></script>

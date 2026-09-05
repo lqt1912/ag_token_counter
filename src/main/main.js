@@ -63,8 +63,8 @@ ipcMain.handle('resize-mini-widget', (event, contentWidth) => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { workArea } = primaryDisplay;
 
-  // Add 28px safe buffer for shadow and rounded caps (14px each side)
-  const safeWidth = Math.max(320, Math.ceil(contentWidth + 28));
+  // Add 16px safe buffer for shadow and rounded caps (8px each side)
+  const safeWidth = Math.max(300, Math.ceil(contentWidth + 16));
   const currentBounds = miniWindow.getBounds();
 
   if (Math.abs(currentBounds.width - safeWidth) < 2) return;
@@ -209,8 +209,8 @@ function createMiniWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { workArea } = primaryDisplay;
 
-  const widgetWidth = 400;
-  const widgetHeight = 46;
+  const widgetWidth = 380;
+  const widgetHeight = 32;
 
   // Position at top-center of the screen
   const x = Math.round(workArea.x + (workArea.width - widgetWidth) / 2);

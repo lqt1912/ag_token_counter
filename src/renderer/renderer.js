@@ -19,8 +19,11 @@ async function loadData() {
     let res = null;
     if (window.electronAPI && window.electronAPI.getStats) {
       res = await window.electronAPI.getStats();
-    } else if (window.__TAURI__ && window.__TAURI__.core) {
-      res = await window.__TAURI__.core.invoke('get_stats');
+    } else if (window.__TAURI__) {
+      const invoke = window.__TAURI__.core?.invoke || window.__TAURI__.invoke;
+      if (invoke) {
+        res = await invoke('get_stats');
+      }
     }
     if (!res) return;
     if (res && res.error) {
@@ -340,4 +343,104 @@ document.querySelectorAll('.filter-btn').forEach((btn) => {
 
 // Initial Load & Polling (Live Auto-Sync)
 loadData();
+
+// --- Settings Modal & Auto-Start Controller ---
+const settingsModal = document.getElementById('settings-modal');
+const btnOpenSettings = document.getElementById('btn-open-settings');
+const btnCloseSettings = document.getElementById('btn-close-settings');
+const btnDoneSettings = document.getElementById('btn-done-settings');
+const toggleAutostart = document.getElementById('toggle-autostart');
+const settingsStatusMsg = document.getElementById('settings-status-msg');
+
+async function checkAutostartStatus() {
+  if (window.__TAURI__) {
+    const invoke = window.__TAURI__.core?.invoke || window.__TAURI__.invoke;
+    if (invoke) {
+      try {
+        const isEnabled = await invoke('get_autostart_status');
+        if (toggleAutostart) {
+          toggleAutostart.checked = !!isEnabled;
+        }
+      } catch (err) {
+        console.error('Failed to get autostart status:', err);
+      }
+    }
+  }
+}
+
+function openSettingsModal() {
+  if (!settingsModal) return;
+  settingsModal.style.display = 'flex';
+  if (settingsStatusMsg) settingsStatusMsg.textContent = '';
+  checkAutostartStatus();
+}
+
+function closeSettingsModal() {
+  if (!settingsModal) return;
+  settingsModal.style.display = 'none';
+}
+
+if (btnOpenSettings) btnOpenSettings.addEventListener('click', openSettingsModal);
+if (btnCloseSettings) btnCloseSettings.addEventListener('click', closeSettingsModal);
+if (btnDoneSettings) btnDoneSettings.addEventListener('click', closeSettingsModal);
+
+if (settingsModal) {
+  settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) {
+      closeSettingsModal();
+    }
+  });
+}
+
+if (toggleAutostart) {
+  toggleAutostart.addEventListener('change', async (e) => {
+    const enable = e.target.checked;
+    if (settingsStatusMsg) {
+      settingsStatusMsg.style.color = '#64748b';
+      settingsStatusMsg.textContent = 'Updating...';
+    }
+    if (window.__TAURI__) {
+      const invoke = window.__TAURI__.core?.invoke || window.__TAURI__.invoke;
+      if (invoke) {
+        try {
+          const res = await invoke('set_autostart', { enable });
+          toggleAutostart.checked = !!res;
+          if (settingsStatusMsg) {
+            settingsStatusMsg.style.color = '#10b981';
+            settingsStatusMsg.textContent = res ? '✓ Auto-start enabled' : '✓ Auto-start disabled';
+            setTimeout(() => {
+              if (settingsStatusMsg) settingsStatusMsg.textContent = '';
+            }, 3000);
+          }
+        } catch (err) {
+          console.error('Failed to toggle autostart:', err);
+          toggleAutostart.checked = !enable;
+          if (settingsStatusMsg) {
+            settingsStatusMsg.style.color = '#f43f5e';
+            settingsStatusMsg.textContent = 'Failed to update registry';
+          }
+        }
+      }
+    }
+  });
+}
+
+const btnOpenDataFolder = document.getElementById('btn-open-data-folder');
+if (btnOpenDataFolder) {
+  btnOpenDataFolder.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (window.__TAURI__) {
+      const invoke = window.__TAURI__.core?.invoke || window.__TAURI__.invoke;
+      if (invoke) {
+        try {
+          await invoke('open_data_folder');
+        } catch (err) {
+          console.error('Failed to open data folder:', err);
+        }
+      }
+    }
+  });
+}
+
+
 

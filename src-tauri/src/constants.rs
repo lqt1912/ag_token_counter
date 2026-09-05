@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 pub const DEFAULT_MODEL_KEY: &str = "gemini-3.7-flash";
