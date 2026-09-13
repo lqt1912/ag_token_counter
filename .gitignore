@@ -52,8 +52,12 @@ next-env.d.ts
 /src-tauri/target/
 target/
 
+# Antigravity .NET tray app build artifacts
+/desktop/bin/
+/desktop/obj/
+/desktop/publish/
+
 # Local Data Store
 /data/
 data-store.json
-
 

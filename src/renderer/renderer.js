@@ -232,7 +232,9 @@ function updateActiveSessionUI(currentSession, contextLimits) {
   const modelEl = document.getElementById('active-model-name');
   if (modelEl) modelEl.innerText = currentSession.detectedModelName || 'AI Model';
 
-  const contextTokens = currentSession.metrics ? currentSession.metrics.totalTokens : 0;
+  const contextTokens = currentSession.metrics
+    ? (currentSession.metrics.latestContextTokens || currentSession.metrics.totalTokens || 0)
+    : 0;
   let maxLimit = 1_000_000;
   let limitLabel = '1M Context Window';
 
@@ -263,25 +265,25 @@ function updateActiveSessionUI(currentSession, contextLimits) {
       fill.classList.add('danger');
       if (statusEl) {
         statusEl.className = 'status-danger';
-        statusEl.innerText = '⚠ High context load (Approaching compaction limit)';
+          statusEl.innerText = '⚠ High estimated context';
       }
     } else if (percent >= 50) {
       fill.classList.add('warning');
       if (statusEl) {
         statusEl.className = 'status-warning';
-        statusEl.innerText = '⚡ Moderate context usage';
+          statusEl.innerText = '⚡ Moderate estimated context';
       }
     } else {
       if (statusEl) {
         statusEl.className = 'status-optimal';
-        statusEl.innerText = '● Optimal context efficiency';
+          statusEl.innerText = '● Estimated from transcript';
       }
     }
   }
 
   const remaining = Math.max(0, maxLimit - contextTokens);
   const remEl = document.getElementById('active-context-remaining');
-  if (remEl) remEl.innerText = `Runway: ${formatNumber(remaining)} tokens`;
+  if (remEl) remEl.innerText = `Approx. runway: ${formatNumber(remaining)} tokens`;
 
   const inEl = document.getElementById('active-input-tokens');
   if (inEl && currentSession.metrics) inEl.innerText = formatNumber(currentSession.metrics.inputTokens);
@@ -441,6 +443,4 @@ if (btnOpenDataFolder) {
     }
   });
 }
-
-
 
